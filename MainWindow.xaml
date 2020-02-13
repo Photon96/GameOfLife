@@ -1,0 +1,129 @@
+﻿<Window x:Class="GameOfLifeProject.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameOfLifeProject"
+        mc:Ignorable="d"
+        Title="Game of Life" Height="600" Width="1000">
+    <Window.Resources>
+        <Storyboard x:Key="ChangeColorBtn">
+            <Storyboard>
+                <ColorAnimation To="Green" 
+                     Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" Storyboard.TargetName="StartBtn"
+                     Duration="0:0:1"/>
+            </Storyboard>
+        </Storyboard>
+        <Storyboard x:Key="ChangeColorStartBtn">
+            <Storyboard>
+                <ColorAnimation To="LightGray" 
+                     Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" Storyboard.TargetName="StartBtn"
+                     Duration="0:0:1"/>
+            </Storyboard>
+        </Storyboard>
+        <local:CellStateToColorConverter x:Key="CellStateToColorConverter"/>
+        <DataTemplate x:Key="DataTemplateForLabel">
+            <Button x:Name="ChangeCellStateBtn" Click="ChangeCellStateBtn" Background="{Binding Mode=OneWay, Converter={StaticResource CellStateToColorConverter}}" Height="20" Width="20" Margin="4,4,4,4" Tag="{Binding Name}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="DataTemplateForItemInItemsControl">
+            <ItemsControl ItemsSource="{Binding}" ItemTemplate="{DynamicResource DataTemplateForLabel}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </DataTemplate>
+        <local:GameProperties x:Key="GamePropertiesInstance" x:Name="gameProperties" NeighboursToReproduce="3"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ItemsControl x:Name="lst" ItemTemplate="{DynamicResource DataTemplateForItemInItemsControl}" ItemsSource="{Binding Cells, Mode=OneWay}"/>
+            
+        </StackPanel>
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" >
+
+                <TextBox Text="Generacja :" Width="150" Height="25" HorizontalContentAlignment="Center"  FontSize="15"/>
+                <TextBox Text="{Binding Generation, Mode=OneWay}" Height="25" HorizontalContentAlignment="Left"  FontSize="15"/>
+            </StackPanel>
+            <StackPanel  Orientation="Vertical"  Grid.Row="1" >
+                <Button VerticalContentAlignment="Center" Height="50" Click="CreateNewGameBtnClick" Content="Stworz nowa plansze">
+                <Button.Triggers>
+                    <EventTrigger RoutedEvent="Button.Click" >
+                        <BeginStoryboard  Storyboard="{StaticResource ChangeColorBtn}">
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Button.Triggers>
+                </Button>
+            </StackPanel>
+        </Grid>
+        
+
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0">
+                <local:CustomInput Text="Szerokosc planszy" x:Name="WidthInput" DefaultValue="10"/>
+                <local:CustomInput Text="Wysokosc planszy" x:Name="HeightInput" DefaultValue="10" />
+                <local:CustomInput Text="% zapelnienia planszy" x:Name="DegreeInput" DefaultValue="25"/>
+                
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1">
+                <WrapPanel>
+                    <Label Content="Liczba sasiadow do rozwoju"></Label>
+                    <TextBox HorizontalAlignment="Left" 
+                        x:Name="SampleTextBox" Height="25" Width="50" 
+                        Style="{StaticResource TextErrorStyle}">
+                        <TextBox.Text>
+                            <Binding Path="NeighboursToReproduce" Source="{StaticResource GamePropertiesInstance}" 
+                                        ValidatesOnDataErrors="True" UpdateSourceTrigger="PropertyChanged">
+                                <Binding.ValidationRules>
+                                    <ExceptionValidationRule></ExceptionValidationRule>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>
+                </WrapPanel>
+            </StackPanel>
+        </Grid>
+        
+        
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <Button Click="StartBtnClick" x:Name="StartBtn" Content="Start" IsEnabled="False">
+                <Button.Triggers>
+                    <EventTrigger RoutedEvent="Button.Click" >
+                        <BeginStoryboard  Storyboard="{StaticResource ChangeColorStartBtn}">
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Click="StopBtnClick" x:Name="StopBtn" Content="Stop" IsEnabled="False">
+                <Button.Triggers>
+                    <EventTrigger RoutedEvent="Button.Click" >
+                        <BeginStoryboard  Storyboard="{StaticResource ChangeColorBtn}"/>
+
+                    </EventTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Command="{Binding Path=NextStateCommand}" IsEnabled="False" x:Name="NextStateBtn">Nastepne pokolenie</Button>
+        </StackPanel>
+    </Grid>
+    
+</Window>
